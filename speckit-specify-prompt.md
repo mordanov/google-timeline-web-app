@@ -1,14 +1,3 @@
-# Speckit — Specify Prompt
-
-Run this after the constitution is in place:
-
-```
-/speckit.specify
-```
-
-Then provide the following as input:
-
-```
 Build "Timeline Viewer," a personal web application that lets me privately
 view my own Google Maps location history, browsable one day at a time on a
 map.
@@ -83,4 +72,3 @@ Out of scope for this version:
 - Any direct, real-time connection to a phone; all data arrives via the
   exported JSON file, either uploaded manually or dropped into the watched
   Google Drive folder.
-```
