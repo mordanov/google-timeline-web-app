@@ -3,8 +3,6 @@
 .env
 .env.local
 .env.*.local
-
-# Environment examples (keep .env.example tracked)
 !.env.example
 
 # Python
@@ -14,20 +12,23 @@ __pycache__/
 *.pyd
 .Python
 *.egg-info/
-dist/
-build/
 .venv/
 venv/
 env/
+
+# pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Build output (Python + Node)
+dist/
+build/
 
 # Node / frontend
 node_modules/
 .pnp
 .pnp.js
-.next/
-out/
-dist/
-build/
 *.local
 
 # Logs
@@ -43,3 +44,4 @@ logs/
 *.swp
 *.swo
 .DS_Store
+Thumbs.db

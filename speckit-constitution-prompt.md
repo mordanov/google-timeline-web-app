@@ -1,14 +1,3 @@
-# Speckit — Constitution Prompt
-
-Run this once, right after `specify init`, before any feature work:
-
-```
-/speckit.constitution
-```
-
-Then provide the following as input:
-
-```
 This project is "Timeline Viewer" — a personal, single-user web application
 for privately viewing my own Google Maps Timeline location history on a map.
 
@@ -62,4 +51,3 @@ Architectural principles:
 
 8. Access control: every API endpoint except the login endpoint must reject
    requests without a valid JWT with a 401 response.
-```

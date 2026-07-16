@@ -1,0 +1,26 @@
+{
+  "name": "timeline-viewer-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@vis.gl/react-google-maps": "^1.4.0",
+    "@mui/material": "^6.4.0",
+    "@mui/icons-material": "^6.4.0",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.3",
+    "typescript": "^5.6.3",
+    "vite": "^6.0.3"
+  }
+}
