@@ -2,6 +2,7 @@
 
 **Purpose**: Validate specification completeness and quality before proceeding to planning
 **Created**: 2026-07-16
+**Last Updated**: 2026-07-16 (post-clarification session)
 **Feature**: [spec.md](../spec.md)
 
 ## Content Quality
@@ -31,4 +32,7 @@
 
 ## Notes
 
-All items pass. Specification is ready for `/speckit-clarify` or `/speckit-plan`.
+Clarification session 2026-07-16: added transport-mode color-coding + stats
+panel (FR-007, FR-007b), date-range view with per-day color legend (FR-004b,
+User Story 2b), and aggregate stats scope for date-range view. All items pass.
+Ready for `/speckit-plan`.
