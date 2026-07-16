@@ -1,13 +1,17 @@
 import { useEffect, useState } from 'react'
+import {
+  Box, Typography, Divider, Button, CircularProgress,
+  Paper,
+} from '@mui/material'
+import UploadFileIcon from '@mui/icons-material/UploadFile'
+import HistoryIcon from '@mui/icons-material/History'
 import { getSegments, getStats, Segment, Stat } from '../services/api'
 import TrackMap from '../components/TrackMap'
 import DatePicker from '../components/DatePicker'
 import StatsPanel from '../components/StatsPanel'
 import UploadForm from '../components/UploadForm'
 
-const MAPS_API_KEY = (import.meta as Record<string, unknown>).env
-  ? (import.meta as { env: Record<string, string> }).env.VITE_GOOGLE_MAPS_API_KEY ?? ''
-  : ''
+const MAPS_API_KEY = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_GOOGLE_MAPS_API_KEY ?? ''
 
 export default function MapPage() {
   const today = new Date().toISOString().slice(0, 10)
@@ -42,45 +46,77 @@ export default function MapPage() {
   const noData = !loading && segments.length === 0
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* Sidebar */}
-      <div style={{ width: '260px', flexShrink: 0, borderRight: '1px solid #e0e0e0', overflowY: 'auto', background: '#fafafa' }}>
-        <div style={{ padding: '12px', borderBottom: '1px solid #e0e0e0', fontWeight: 600, fontSize: '15px' }}>
-          Timeline Viewer
-        </div>
+      <Box sx={{
+        width: 272,
+        flexShrink: 0,
+        borderRight: 1,
+        borderColor: 'divider',
+        overflowY: 'auto',
+        bgcolor: 'background.paper',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+        <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider' }}>
+          <Typography variant="subtitle1" fontWeight={600}>Timeline Viewer</Typography>
+        </Box>
 
         <DatePicker onDateChange={handleDateChange} onRangeChange={handleRangeChange} />
 
-        <div style={{ borderTop: '1px solid #e0e0e0' }}>
-          <StatsPanel stats={stats} />
-        </div>
+        <Divider />
+        <StatsPanel stats={stats} />
 
-        <div style={{ borderTop: '1px solid #e0e0e0', padding: '8px' }}>
-          <button onClick={() => setShowUpload(!showUpload)} style={{ fontSize: '12px', background: 'none', border: '1px solid #ccc', borderRadius: '3px', padding: '4px 8px', cursor: 'pointer' }}>
+        <Divider />
+        <Box sx={{ p: 1.5 }}>
+          <Button
+            fullWidth
+            variant={showUpload ? 'contained' : 'outlined'}
+            size="small"
+            startIcon={<UploadFileIcon />}
+            onClick={() => setShowUpload(!showUpload)}
+          >
             {showUpload ? 'Hide Upload' : 'Upload Timeline File'}
-          </button>
-          {showUpload && <UploadForm />}
-        </div>
+          </Button>
+          {showUpload && <Box sx={{ mt: 1 }}><UploadForm /></Box>}
+        </Box>
 
-        <div style={{ borderTop: '1px solid #e0e0e0', padding: '8px' }}>
-          <a href="/audit" style={{ fontSize: '12px', color: '#4285F4' }}>View Import History →</a>
-        </div>
-      </div>
+        <Divider />
+        <Box sx={{ p: 1.5 }}>
+          <Button
+            fullWidth
+            variant="text"
+            size="small"
+            startIcon={<HistoryIcon />}
+            href="/audit"
+          >
+            Import History
+          </Button>
+        </Box>
+      </Box>
 
       {/* Map area */}
-      <div style={{ flex: 1, position: 'relative' }}>
+      <Box sx={{ flex: 1, position: 'relative' }}>
         {loading && (
-          <div style={{ position: 'absolute', top: 8, left: '50%', transform: 'translateX(-50%)', background: 'white', padding: '6px 12px', borderRadius: '4px', boxShadow: '0 1px 4px rgba(0,0,0,.2)', zIndex: 10, fontSize: '13px' }}>
-            Loading…
-          </div>
+          <Paper elevation={2} sx={{
+            position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
+            px: 2, py: 0.75, zIndex: 10, display: 'flex', alignItems: 'center', gap: 1,
+          }}>
+            <CircularProgress size={14} />
+            <Typography variant="caption">Loading…</Typography>
+          </Paper>
         )}
         {noData && (
-          <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', background: 'white', padding: '16px 24px', borderRadius: '6px', boxShadow: '0 2px 8px rgba(0,0,0,.2)', zIndex: 10, fontSize: '14px', textAlign: 'center' }}>
-            No data for this date
-          </div>
+          <Paper elevation={3} sx={{
+            position: 'absolute', top: '50%', left: '50%',
+            transform: 'translate(-50%, -50%)',
+            px: 3, py: 2, zIndex: 10, textAlign: 'center',
+          }}>
+            <Typography variant="body2" color="text.secondary">No data for this date</Typography>
+          </Paper>
         )}
         <TrackMap segments={segments} viewMode={viewMode} apiKey={MAPS_API_KEY} />
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }

@@ -1,4 +1,8 @@
 import { FormEvent, useState } from 'react'
+import {
+  Box, Button, Card, CardContent, TextField,
+  Typography, Alert, CircularProgress,
+} from '@mui/material'
 import { login } from '../services/api'
 
 interface Props {
@@ -27,22 +31,41 @@ export default function LoginPage({ onLogin }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: '#f5f5f5' }}>
-      <form onSubmit={handleSubmit} style={{ background: 'white', padding: '32px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,.15)', minWidth: '300px' }}>
-        <h2 style={{ marginTop: 0, marginBottom: '24px' }}>Timeline Viewer</h2>
-        <div style={{ marginBottom: '12px' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px' }}>Username</label>
-          <input value={username} onChange={(e) => setUsername(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-        </div>
-        <div style={{ marginBottom: '16px' }}>
-          <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px' }}>Password</label>
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }} />
-        </div>
-        {error && <div style={{ color: '#E63946', marginBottom: '12px', fontSize: '13px' }}>{error}</div>}
-        <button type="submit" disabled={loading} style={{ width: '100%', padding: '10px', background: '#4285F4', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '14px' }}>
-          {loading ? 'Signing in…' : 'Sign in'}
-        </button>
-      </form>
-    </div>
+    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', bgcolor: 'background.default' }}>
+      <Card sx={{ minWidth: 340, boxShadow: 3 }}>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h5" fontWeight={600} mb={3}>Timeline Viewer</Typography>
+          <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <TextField
+              label="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              size="small"
+              autoComplete="username"
+            />
+            <TextField
+              label="Password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              size="small"
+              autoComplete="current-password"
+            />
+            {error && <Alert severity="error" sx={{ py: 0 }}>{error}</Alert>}
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={loading}
+              size="large"
+              startIcon={loading ? <CircularProgress size={16} color="inherit" /> : null}
+            >
+              {loading ? 'Signing in…' : 'Sign in'}
+            </Button>
+          </Box>
+        </CardContent>
+      </Card>
+    </Box>
   )
 }

@@ -1,3 +1,4 @@
+import { Box, Typography } from '@mui/material'
 import { Stat } from '../services/api'
 import { MODE_COLORS } from '../constants/colors'
 
@@ -20,23 +21,36 @@ function formatDuration(s: number): string {
 export default function StatsPanel({ stats }: Props) {
   if (stats.length === 0) {
     return (
-      <div style={{ padding: '12px', color: '#888', fontSize: '13px' }}>
-        No activity data
-      </div>
+      <Box sx={{ px: 2, py: 1.5 }}>
+        <Typography variant="caption" color="text.secondary">No activity data</Typography>
+      </Box>
     )
   }
 
   return (
-    <div style={{ padding: '8px', fontSize: '13px' }}>
-      <div style={{ fontWeight: 600, marginBottom: '6px' }}>Activity Summary</div>
-      {stats.map((s) => (
-        <div key={s.transport_mode_group} style={{ display: 'flex', alignItems: 'center', marginBottom: '4px', gap: '8px' }}>
-          <div style={{ width: 10, height: 10, borderRadius: '50%', background: MODE_COLORS[s.transport_mode_group] ?? '#9E9E9E', flexShrink: 0 }} />
-          <span style={{ textTransform: 'capitalize', minWidth: '60px' }}>{s.transport_mode_group}</span>
-          <span style={{ color: '#555' }}>{formatDistance(s.total_distance_meters)}</span>
-          <span style={{ color: '#999' }}>{formatDuration(s.total_duration_seconds)}</span>
-        </div>
-      ))}
-    </div>
+    <Box sx={{ px: 2, py: 1.5 }}>
+      <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
+        Activity Summary
+      </Typography>
+      <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
+        {stats.map((s) => (
+          <Box key={s.transport_mode_group} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{
+              width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
+              bgcolor: MODE_COLORS[s.transport_mode_group] ?? '#9E9E9E',
+            }} />
+            <Typography variant="body2" sx={{ textTransform: 'capitalize', flex: 1 }}>
+              {s.transport_mode_group}
+            </Typography>
+            <Typography variant="body2" fontWeight={500}>
+              {formatDistance(s.total_distance_meters)}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {formatDuration(s.total_duration_seconds)}
+            </Typography>
+          </Box>
+        ))}
+      </Box>
+    </Box>
   )
 }

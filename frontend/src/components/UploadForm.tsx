@@ -1,4 +1,7 @@
 import { useRef, useState } from 'react'
+import { Box, Button, Typography, LinearProgress, Alert } from '@mui/material'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'
 import { uploadFile, getImportStatus, ImportRecord } from '../services/api'
 
 export default function UploadForm() {
@@ -6,6 +9,9 @@ export default function UploadForm() {
   const [status, setStatus] = useState<'idle' | 'uploading' | 'polling' | 'done' | 'error'>('idle')
   const [record, setRecord] = useState<ImportRecord | null>(null)
   const [error, setError] = useState('')
+  const [fileName, setFileName] = useState('')
+
+  const busy = status === 'uploading' || status === 'polling'
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -20,7 +26,6 @@ export default function UploadForm() {
       const { import_record_id } = await uploadFile(file)
       setStatus('polling')
 
-      // Poll until outcome is set
       const poll = async () => {
         const rec = await getImportStatus(import_record_id)
         setRecord(rec)
@@ -38,24 +43,53 @@ export default function UploadForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: '12px', fontSize: '13px' }}>
-      <div style={{ fontWeight: 600, marginBottom: '8px' }}>Upload Timeline JSON</div>
-      <input ref={inputRef} type="file" accept=".json" required />
-      <button type="submit" disabled={status === 'uploading' || status === 'polling'} style={{ marginLeft: '8px' }}>
-        {status === 'uploading' ? 'Uploading…' : status === 'polling' ? 'Processing…' : 'Upload'}
-      </button>
+    <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+      <Button
+        component="label"
+        variant="outlined"
+        size="small"
+        startIcon={<CloudUploadIcon />}
+        fullWidth
+        disabled={busy}
+      >
+        {fileName || 'Choose file…'}
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".json"
+          required
+          hidden
+          onChange={(e) => setFileName(e.target.files?.[0]?.name ?? '')}
+        />
+      </Button>
+
+      <Button
+        type="submit"
+        variant="contained"
+        size="small"
+        fullWidth
+        disabled={busy || !fileName}
+      >
+        {status === 'uploading' ? 'Uploading…' : status === 'polling' ? 'Processing…' : 'Import'}
+      </Button>
+
+      {busy && <LinearProgress sx={{ borderRadius: 1 }} />}
 
       {status === 'done' && record && (
-        <div style={{ marginTop: '8px', color: record.outcome === 'imported' ? '#34A853' : record.outcome === 'no_changes' ? '#888' : '#E63946' }}>
-          {record.outcome === 'imported' && `✓ Imported ${record.segments_imported ?? 0} segments`}
-          {record.outcome === 'no_changes' && '— No new data (file already imported)'}
-          {record.outcome === 'failed' && `✗ Failed: ${record.error_message}`}
-        </div>
+        <Alert
+          severity={record.outcome === 'imported' ? 'success' : record.outcome === 'no_changes' ? 'info' : 'error'}
+          icon={record.outcome === 'imported' ? <CheckCircleOutlineIcon fontSize="small" /> : undefined}
+          sx={{ py: 0, fontSize: 12 }}
+        >
+          {record.outcome === 'imported' && `Imported ${record.segments_imported ?? 0} segments`}
+          {record.outcome === 'no_changes' && 'No new data (already imported)'}
+          {record.outcome === 'failed' && `Failed: ${record.error_message}`}
+        </Alert>
       )}
 
       {status === 'error' && (
-        <div style={{ marginTop: '8px', color: '#E63946' }}>✗ {error}</div>
+        <Alert severity="error" sx={{ py: 0, fontSize: 12 }}>{error}</Alert>
       )}
-    </form>
+    </Box>
   )
 }

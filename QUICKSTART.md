@@ -30,6 +30,10 @@ Open `.env` and set the values below. Every other variable already has a working
 | `JWT_SECRET` | Any long random string, e.g. `openssl rand -hex 32` |
 | `VITE_GOOGLE_MAPS_API_KEY` | [Google Cloud Console](https://console.cloud.google.com/) → APIs & Services → Credentials → Create API key → restrict to **Maps JavaScript API** |
 | `DATABASE_URL` | Update the password to match `POSTGRES_PASSWORD` — keep the rest unchanged |
+| `APP_USERNAME` | The login name you want to use in the app |
+| `APP_PASSWORD` | The password for that account |
+
+The user account is created automatically on first startup. If you later change these values in `.env` they have no effect — the account already exists.
 
 ### Optional — Google Drive sync
 
@@ -71,23 +75,11 @@ Once all services are healthy the app is available at:
 - **Backend API** — http://localhost:8000
 - **API docs** — http://localhost:8000/docs
 
----
-
-## Step 5 — Create your user account
-
-The application has a single-user model. Run this once after the containers are up:
-
-```bash
-docker compose exec backend python scripts/create_user.py \
-  --username your_username \
-  --password your_password
-```
-
-You can now log in at http://localhost:3000.
+The user account from `APP_USERNAME` / `APP_PASSWORD` is provisioned automatically during startup. Log in at http://localhost:3000.
 
 ---
 
-## Step 6 — Import your Timeline data
+## Step 5 — Import your Timeline data
 
 ### Option A — Manual upload
 

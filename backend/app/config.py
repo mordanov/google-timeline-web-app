@@ -15,5 +15,8 @@ class Settings(BaseSettings):
 
     vite_google_maps_api_key: str = ""
 
+    app_username: str = ""
+    app_password: str = ""
+
 
 settings = Settings()
