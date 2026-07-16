@@ -4,6 +4,14 @@
 **Created**: 2026-07-16
 **Status**: Draft
 
+## Clarifications
+
+### Session 2026-07-16
+
+- Q: How should transport-mode activity breakdown be displayed? → A: Both a stats summary panel (distance/time per mode) AND color-coded path segments on the map by transport mode.
+- Q: How should paths be rendered in date-range view? → A: Each day rendered in a distinct color with a map legend showing which color corresponds to which date.
+- Q: What scope should the activity stats cover in date-range view? → A: Aggregate totals for the full selected period (not per-day breakdown).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 — Authenticated Login (Priority: P1)
@@ -36,28 +44,65 @@ error message, still on login page.
 ### User Story 2 — View Location History on a Map (Priority: P1)
 
 After logging in the user sees today's route and visited places plotted on a
-map. They can pick any other calendar date and the map updates to show that
-day's data. If a chosen day has no recorded data, a clear message replaces the
-map or is shown alongside it.
+map. Path segments are color-coded by transport mode (walking, driving, cycling,
+etc.) and a stats panel shows the aggregate distance and time per transport mode
+for the selected period. The user can pick any other calendar date and the map
+updates. If a chosen day has no recorded data, a clear message replaces the map
+or is shown alongside it.
 
 **Why this priority**: Viewing data on the map is the core value proposition of
 the entire application.
 
 **Independent Test**: With at least one day of imported data, open the app →
-today's route appears. Select a day with data → map updates. Select a day with
-no data → "no data for this date" message shown.
+today's route appears, color-coded by transport mode, with a stats panel. Select
+a day with data → map updates. Select a day with no data → "no data for this
+date" message shown.
 
 **Acceptance Scenarios**:
 
 1. **Given** the user is logged in and data exists for today, **When** the app
-   loads, **Then** today's route and place visits are plotted on the map.
+   loads, **Then** today's route and place visits are plotted on the map with
+   path segments color-coded by transport mode and a stats panel showing
+   distance/time per mode.
 2. **Given** the map view, **When** the user selects a date that has data,
-   **Then** the map updates to show that day's route and visits.
+   **Then** the map updates to show that day's route and visits, color-coded by
+   transport mode, with updated stats.
 3. **Given** the map view, **When** the user selects a date with no data,
    **Then** a clear "no data for this date" message is displayed instead of a
    blank or broken map.
 4. **Given** today has no recorded data, **When** the app loads, **Then** the
    "no data for this date" message is shown for today.
+
+---
+
+### User Story 2b — Date Range View (Priority: P2)
+
+The user can select a start and end date to view all paths for that period on
+the map simultaneously. Each day's path is rendered in a distinct color, and a
+map legend identifies which color corresponds to which date. The stats panel
+shows aggregate totals (distance and time per transport mode) for the entire
+selected period.
+
+**Why this priority**: Single-day view is the core interaction; date-range view
+adds meaningful analytical value but the app is fully usable without it.
+
+**Independent Test**: Select a date range covering at least 2 days with data →
+map shows all days' paths, each in a different color, with a legend → stats
+panel shows aggregate totals across all selected days.
+
+**Acceptance Scenarios**:
+
+1. **Given** the map view, **When** the user selects a date range, **Then** all
+   days within that range that have data are plotted on the map simultaneously,
+   each day's path in a distinct color.
+2. **Given** a date-range map, **When** multiple days are shown, **Then** a
+   legend is visible on the map linking each color to its corresponding date.
+3. **Given** a date-range map, **When** the stats panel is shown, **Then** it
+   displays aggregate totals for distance and time per transport mode across the
+   full selected period (not broken down per day).
+4. **Given** a date range where some days have no data, **When** the map
+   renders, **Then** only days with data are plotted; missing days are not
+   represented as empty paths.
 
 ---
 
@@ -173,13 +218,23 @@ malformed file → the failure event appears in the log.
   as the default view upon login.
 - **FR-004**: The system MUST allow the user to select any calendar date and
   display that day's route and place visits on the map.
+- **FR-004b**: The system MUST allow the user to select a date range (start date
+  + end date) and display all paths for every day within that range on the map
+  simultaneously, with each day rendered in a distinct color and a legend
+  identifying each color by date.
 - **FR-005**: The system MUST display a clear "no data for this date" message
   when a selected date has no recorded location data.
 - **FR-006**: The system MUST provide a file-upload interface for submitting a
   Google Maps Timeline JSON export.
 - **FR-007**: The system MUST parse both `timelinePath` movement segments and
   `visit` place segments from a valid Timeline export and store them as
-  discrete location points attributed to specific calendar days.
+  discrete location points attributed to specific calendar days. Each movement
+  point MUST retain its transport mode (e.g., walking, driving, cycling) where
+  available in the source data, so path segments can be color-coded by mode and
+  activity statistics can be computed.
+- **FR-007b**: The system MUST display a stats panel alongside the map showing
+  aggregate distance and time broken down by transport mode for the currently
+  selected date or date range.
 - **FR-008**: The parsing logic MUST reside in a single shared module used by
   both the manual upload path and the automatic Drive-sync path.
 - **FR-009**: Uploading a file that has already been imported MUST NOT create
@@ -201,7 +256,9 @@ malformed file → the failure event appears in the log.
 ### Key Entities
 
 - **LocationPoint**: A single GPS coordinate with a timestamp; the atomic unit
-  of location history. Belongs to a calendar day. May carry a semantic label
+  of location history. Belongs to a calendar day. Carries a transport mode
+  (e.g., walking, driving, cycling) where available in the source data, enabling
+  color-coding and activity statistics. May also carry a semantic place label
   (e.g., home, work) if derived from a `visit` entry.
 - **ImportRecord**: An audit log entry recording one import attempt. Captures
   source, file identifier, timestamp, outcome, and an optional error message.
@@ -213,9 +270,13 @@ malformed file → the failure event appears in the log.
 ### Measurable Outcomes
 
 - **SC-001**: A logged-in user can open the app and see today's location data
-  plotted on the map within 3 seconds on a standard broadband connection.
-- **SC-002**: Selecting a different date updates the map (or shows the no-data
-  message) without a full page reload.
+  plotted on the map, color-coded by transport mode, within 3 seconds on a
+  standard broadband connection.
+- **SC-002**: Selecting a different date or date range updates the map and stats
+  panel (or shows the no-data message) without a full page reload.
+- **SC-002b**: The stats panel correctly reports aggregate distance and time per
+  transport mode for any selected single day or date range, matching values
+  derivable from the raw import data.
 - **SC-003**: A Timeline JSON export file of typical size (up to 50 MB) uploads
   and is fully importable within 60 seconds.
 - **SC-004**: A malformed or unrecognized file upload completes with a visible
