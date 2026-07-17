@@ -11,7 +11,7 @@ import DatePicker from '../components/DatePicker'
 import StatsPanel from '../components/StatsPanel'
 import UploadForm from '../components/UploadForm'
 
-const MAPS_API_KEY = (import.meta as unknown as { env: Record<string, string> }).env?.VITE_GOOGLE_MAPS_API_KEY ?? ''
+const MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? ''
 
 export default function MapPage() {
   const today = new Date().toISOString().slice(0, 10)
