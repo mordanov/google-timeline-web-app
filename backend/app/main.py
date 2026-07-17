@@ -20,11 +20,16 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     if settings.app_username and settings.app_password:
         async with AsyncSessionLocal() as db:
-            existing = await db.execute(select(User).where(User.username == settings.app_username))
-            if not existing.scalar_one_or_none():
+            result = await db.execute(select(User).where(User.username == settings.app_username))
+            user = result.scalar_one_or_none()
+            if user is None:
                 db.add(User(username=settings.app_username, password_hash=hash_password(settings.app_password)))
                 await db.commit()
                 logger.info("Created user '%s' from APP_USERNAME/APP_PASSWORD", settings.app_username)
+            else:
+                user.password_hash = hash_password(settings.app_password)
+                await db.commit()
+                logger.info("Updated password for user '%s' from APP_USERNAME/APP_PASSWORD", settings.app_username)
     yield
 
 
@@ -32,7 +37,7 @@ app = FastAPI(title="Timeline Viewer", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://frontend:3000"],
+    allow_origins=[o.strip() for o in settings.cors_origins.split(",")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

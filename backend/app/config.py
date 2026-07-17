@@ -18,5 +18,7 @@ class Settings(BaseSettings):
     app_username: str = ""
     app_password: str = ""
 
+    cors_origins: str = "http://localhost:3000"
+
 
 settings = Settings()
