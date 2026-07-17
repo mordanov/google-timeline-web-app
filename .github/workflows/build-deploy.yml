@@ -57,6 +57,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check GOOGLE_TIMELINE_MAPS_API_KEY secret
+        run: |
+          if [ -z "${{ secrets.GOOGLE_TIMELINE_MAPS_API_KEY }}" ]; then
+            echo "ERROR: GOOGLE_TIMELINE_MAPS_API_KEY secret is empty or not set"
+            exit 1
+          fi
+          echo "GOOGLE_TIMELINE_MAPS_API_KEY is set (length: ${#KEY})"
+        env:
+          KEY: ${{ secrets.GOOGLE_TIMELINE_MAPS_API_KEY }}
+
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
