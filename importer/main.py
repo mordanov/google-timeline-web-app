@@ -103,8 +103,26 @@ async def run_cycle() -> None:
             logger.exception("Error processing Drive file %s; skipping to next file", file_name)
 
 
+async def wait_for_db(retries: int = 10, delay: int = 5) -> None:
+    from sqlalchemy import text
+    from app.db import AsyncSessionLocal
+    for attempt in range(1, retries + 1):
+        try:
+            async with AsyncSessionLocal() as db:
+                await db.execute(text("SELECT 1"))
+            logger.info("Database is ready")
+            return
+        except Exception as exc:
+            logger.warning("DB not ready (attempt %d/%d): %s", attempt, retries, exc)
+            if attempt < retries:
+                time.sleep(delay)
+    logger.error("Database did not become ready after %d attempts; exiting", retries)
+    sys.exit(1)
+
+
 def main() -> None:
     logger.info("Drive importer starting (interval=%ds)", SYNC_INTERVAL)
+    asyncio.run(wait_for_db())
     while True:
         asyncio.run(run_cycle())
         logger.info("Cycle complete; sleeping %ds", SYNC_INTERVAL)
