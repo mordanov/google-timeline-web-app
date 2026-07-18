@@ -5,6 +5,7 @@ WORKDIR /app
 COPY backend/requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -i https://pypi.org/simple -r /tmp/requirements.txt
 
+COPY backend/ ./backend/
 COPY importer/ .
 
 CMD ["python", "-u", "main.py"]

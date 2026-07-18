@@ -31,7 +31,7 @@ export default function MapPage() {
   const [stats, setStats] = useState<Stat[]>([])
   const [loading, setLoading] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
-  const [showTimestamps, setShowTimestamps] = useState(false)
+  const [showTimestamps, setShowTimestamps] = useState(() => localStorage.getItem('timeline_show_timestamps') === 'true')
   const [status, setStatus] = useState<{ max_tracking_date: string | null; last_sync_at: string | null }>({
     max_tracking_date: null,
     last_sync_at: null,
@@ -119,7 +119,10 @@ export default function MapPage() {
               control={
                 <Switch
                   checked={showTimestamps}
-                  onChange={(e) => setShowTimestamps(e.target.checked)}
+                  onChange={(e) => {
+                    setShowTimestamps(e.target.checked)
+                    localStorage.setItem('timeline_show_timestamps', String(e.target.checked))
+                  }}
                   size="small"
                 />
               }
