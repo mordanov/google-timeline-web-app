@@ -115,18 +115,22 @@ async def wait_for_db(retries: int = 10, delay: int = 5) -> None:
         except Exception as exc:
             logger.warning("DB not ready (attempt %d/%d): %s", attempt, retries, exc)
             if attempt < retries:
-                time.sleep(delay)
+                await asyncio.sleep(delay)
     logger.error("Database did not become ready after %d attempts; exiting", retries)
     sys.exit(1)
 
 
-def main() -> None:
+async def main_async() -> None:
     logger.info("Drive importer starting (interval=%ds)", SYNC_INTERVAL)
-    asyncio.run(wait_for_db())
+    await wait_for_db()
     while True:
-        asyncio.run(run_cycle())
+        await run_cycle()
         logger.info("Cycle complete; sleeping %ds", SYNC_INTERVAL)
-        time.sleep(SYNC_INTERVAL)
+        await asyncio.sleep(SYNC_INTERVAL)
+
+
+def main() -> None:
+    asyncio.run(main_async())
 
 
 if __name__ == "__main__":
