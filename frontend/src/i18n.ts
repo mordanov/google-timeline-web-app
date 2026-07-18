@@ -67,6 +67,6 @@ export function setLang(lang: Lang) {
   localStorage.setItem('lang', lang)
 }
 
-export function t(lang: Lang): typeof TRANSLATIONS['en'] {
+export function t(lang: Lang): typeof TRANSLATIONS[Lang] {
   return TRANSLATIONS[lang]
 }
