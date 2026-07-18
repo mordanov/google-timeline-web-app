@@ -3,7 +3,28 @@ from datetime import date, timedelta
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.models.import_record import ImportRecord
 from app.models.location_segment import LocationSegment
+
+
+async def get_status(db: AsyncSession) -> dict:
+    max_date_result = await db.execute(
+        select(func.max(LocationSegment.calendar_date))
+    )
+    max_date = max_date_result.scalar_one_or_none()
+
+    last_sync_result = await db.execute(
+        select(ImportRecord.completed_at)
+        .where(ImportRecord.completed_at.isnot(None))
+        .order_by(ImportRecord.completed_at.desc())
+        .limit(1)
+    )
+    last_sync = last_sync_result.scalar_one_or_none()
+
+    return {
+        "max_tracking_date": max_date.isoformat() if max_date else None,
+        "last_sync_at": last_sync.isoformat() if last_sync else None,
+    }
 
 
 async def get_days(db: AsyncSession) -> list[str]:

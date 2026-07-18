@@ -31,6 +31,11 @@ export async function login(username: string, password: string): Promise<string>
   return data.access_token
 }
 
+export async function getLocationStatus(): Promise<{ max_tracking_date: string | null; last_sync_at: string | null }> {
+  const res = await fetch(`${BASE_URL}/locations/status`, { headers: authHeaders() })
+  return handleResponse(res)
+}
+
 export async function getDays(): Promise<{ dates: string[] }> {
   const res = await fetch(`${BASE_URL}/locations/days`, { headers: authHeaders() })
   return handleResponse(res)

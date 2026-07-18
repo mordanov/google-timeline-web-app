@@ -1,9 +1,11 @@
 import { Box, Typography } from '@mui/material'
 import { Stat } from '../services/api'
 import { MODE_COLORS } from '../constants/colors'
+import { Lang, t } from '../i18n'
 
 interface Props {
   stats: Stat[]
+  lang: Lang
 }
 
 function formatDistance(m: number): string {
@@ -18,11 +20,13 @@ function formatDuration(s: number): string {
   return `${m}m`
 }
 
-export default function StatsPanel({ stats }: Props) {
+export default function StatsPanel({ stats, lang }: Props) {
+  const tr = t(lang)
+
   if (stats.length === 0) {
     return (
       <Box sx={{ px: 2, py: 1.5 }}>
-        <Typography variant="caption" color="text.secondary">No activity data</Typography>
+        <Typography variant="caption" color="text.secondary">{tr.noActivityData}</Typography>
       </Box>
     )
   }
@@ -30,7 +34,7 @@ export default function StatsPanel({ stats }: Props) {
   return (
     <Box sx={{ px: 2, py: 1.5 }}>
       <Typography variant="caption" fontWeight={600} color="text.secondary" sx={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>
-        Activity Summary
+        {tr.activitySummary}
       </Typography>
       <Box sx={{ mt: 1, display: 'flex', flexDirection: 'column', gap: 0.75 }}>
         {stats.map((s) => (
@@ -39,8 +43,8 @@ export default function StatsPanel({ stats }: Props) {
               width: 10, height: 10, borderRadius: '50%', flexShrink: 0,
               bgcolor: MODE_COLORS[s.transport_mode_group] ?? '#9E9E9E',
             }} />
-            <Typography variant="body2" sx={{ textTransform: 'capitalize', flex: 1 }}>
-              {s.transport_mode_group}
+            <Typography variant="body2" sx={{ flex: 1 }}>
+              {tr.modes[s.transport_mode_group as keyof typeof tr.modes] ?? s.transport_mode_group}
             </Typography>
             <Typography variant="body2" fontWeight={500}>
               {formatDistance(s.total_distance_meters)}
