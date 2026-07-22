@@ -90,6 +90,11 @@ export async function getImportHistory(limit = 50, offset = 0): Promise<{ record
   return handleResponse(res)
 }
 
+export async function getAlltimeStats(): Promise<AlltimeStats> {
+  const res = await fetch(`${BASE_URL}/locations/alltime-stats`, { headers: authHeaders() })
+  return handleResponse(res)
+}
+
 // Types
 export interface Segment {
   id: number
@@ -109,6 +114,20 @@ export interface Stat {
   transport_mode_group: string
   total_distance_meters: number
   total_duration_seconds: number
+}
+
+export interface AlltimeStats {
+  transport: { transport_mode_group: string; total_distance_meters: number; total_duration_seconds: number }[]
+  countries: { country_code: string; country: string; first_visit: string; last_visit: string }[]
+  cities: { city: string; country_code: string; country: string; visit_count: number; day_count: number; first_visit: string; last_visit: string }[]
+  total_days: number
+  first_date: string | null
+  last_date: string | null
+  longest_streak_days: number
+  longest_day: { date: string; distance_meters: number } | null
+  most_active_month: { month: string; distance_meters: number } | null
+  total_transit_seconds: number
+  unique_places: number
 }
 
 export interface ImportRecord {

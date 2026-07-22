@@ -5,11 +5,13 @@ import {
 } from '@mui/material'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import HistoryIcon from '@mui/icons-material/History'
+import BarChartIcon from '@mui/icons-material/BarChart'
 import { getSegments, getStats, getLocationStatus, Segment, Stat } from '../services/api'
 import TrackMap from '../components/TrackMap'
 import DatePicker from '../components/DatePicker'
 import StatsPanel from '../components/StatsPanel'
 import UploadForm from '../components/UploadForm'
+import AllTimeStatsModal from '../components/AllTimeStatsModal'
 import { getLang, setLang, t, Lang } from '../i18n'
 
 const MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? ''
@@ -31,6 +33,7 @@ export default function MapPage() {
   const [stats, setStats] = useState<Stat[]>([])
   const [loading, setLoading] = useState(false)
   const [showUpload, setShowUpload] = useState(false)
+  const [showAlltimeStats, setShowAlltimeStats] = useState(false)
   const [showTimestamps, setShowTimestamps] = useState(() => localStorage.getItem('timeline_show_timestamps') === 'true')
   const [status, setStatus] = useState<{ max_tracking_date: string | null; last_sync_at: string | null }>({
     max_tracking_date: null,
@@ -156,6 +159,19 @@ export default function MapPage() {
               {tr.importHistory}
             </Button>
           </Box>
+
+          <Divider />
+          <Box sx={{ p: 1.5 }}>
+            <Button
+              fullWidth
+              variant="text"
+              size="small"
+              startIcon={<BarChartIcon />}
+              onClick={() => setShowAlltimeStats(true)}
+            >
+              {tr.alltimeStats}
+            </Button>
+          </Box>
         </Box>
 
         {/* Map area */}
@@ -187,6 +203,8 @@ export default function MapPage() {
           />
         </Box>
       </Box>
+
+      <AllTimeStatsModal open={showAlltimeStats} onClose={() => setShowAlltimeStats(false)} lang={lang} />
 
       {/* Status bar */}
       <Box sx={{

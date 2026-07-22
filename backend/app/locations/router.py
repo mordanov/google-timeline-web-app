@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.db import get_db
-from app.locations.service import get_days, get_segments, get_stats, get_status
+from app.locations.service import get_alltime_stats, get_days, get_segments, get_stats, get_status
 from app.models.user import User
 
 router = APIRouter()
@@ -33,6 +33,14 @@ def _resolve_date_params(
         status_code=400,
         detail="Provide either 'date' or both 'date_from' and 'date_to'",
     )
+
+
+@router.get("/alltime-stats")
+async def alltime_stats(
+    _user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    return await get_alltime_stats(db)
 
 
 @router.get("/status")

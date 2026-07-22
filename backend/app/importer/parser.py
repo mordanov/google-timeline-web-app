@@ -10,6 +10,22 @@ import re
 from datetime import date, datetime, timezone
 from typing import Any
 
+import reverse_geocoder
+
+
+def _bulk_geocode(segments: list[dict[str, Any]]) -> None:
+    """Populate place_city/place_country/place_country_code for visit segments in-place."""
+    visit_indices = [i for i, s in enumerate(segments) if s["segment_type"] == "visit"
+                     and s.get("place_lat") is not None and s.get("place_lng") is not None]
+    if not visit_indices:
+        return
+    coords = [(segments[i]["place_lat"], segments[i]["place_lng"]) for i in visit_indices]
+    results = reverse_geocoder.search(coords, mode=1, verbose=False)
+    for idx, result in zip(visit_indices, results):
+        segments[idx]["place_city"] = result.get("name") or None
+        segments[idx]["place_country"] = result.get("admin1") or None
+        segments[idx]["place_country_code"] = result.get("cc") or None
+
 _GPS_RE = re.compile(r"([+-]?\d+(?:\.\d+)?)°?,\s*([+-]?\d+(?:\.\d+)?)°?")
 
 # Maps raw Google Timeline activity type strings to display groups.
@@ -126,6 +142,9 @@ def parse_timeline(data: dict[str, Any]) -> list[dict[str, Any]]:
                 "place_lat": None,
                 "place_lng": None,
                 "place_semantic_type": None,
+                "place_city": None,
+                "place_country": None,
+                "place_country_code": None,
                 "path_points": path_points or None,
             })
 
@@ -155,6 +174,9 @@ def parse_timeline(data: dict[str, Any]) -> list[dict[str, Any]]:
                 "place_lat": coords[0] if coords else None,
                 "place_lng": coords[1] if coords else None,
                 "place_semantic_type": semantic_type,
+                "place_city": None,
+                "place_country": None,
+                "place_country_code": None,
                 "path_points": None,
             })
 
@@ -189,9 +211,13 @@ def parse_timeline(data: dict[str, Any]) -> list[dict[str, Any]]:
                 "place_lat": None,
                 "place_lng": None,
                 "place_semantic_type": None,
+                "place_city": None,
+                "place_country": None,
+                "place_country_code": None,
                 "path_points": path_points or None,
             })
 
         # timelineMemory and unknown types are skipped
 
+    _bulk_geocode(results)
     return results
