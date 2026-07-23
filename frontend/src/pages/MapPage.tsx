@@ -2,7 +2,10 @@ import { useEffect, useState, useCallback } from 'react'
 import {
   Box, Typography, Divider, Button, CircularProgress,
   Paper, Switch, FormControlLabel, ToggleButton, ToggleButtonGroup,
+  IconButton, Drawer, useMediaQuery, useTheme,
 } from '@mui/material'
+import MenuIcon from '@mui/icons-material/Menu'
+import CloseIcon from '@mui/icons-material/Close'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import HistoryIcon from '@mui/icons-material/History'
 import BarChartIcon from '@mui/icons-material/BarChart'
@@ -40,6 +43,10 @@ export default function MapPage() {
     last_sync_at: null,
   })
 
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'))
+  const [sidebarOpen, setSidebarOpen] = useState(!isMobile)
+
   const tr = t(lang)
 
   const fetchData = useCallback((params: typeof dateParam) => {
@@ -69,11 +76,13 @@ export default function MapPage() {
   function handleDateChange(date: string) {
     setViewMode('single-day')
     setDateParam({ date })
+    if (isMobile) setSidebarOpen(false)
   }
 
   function handleRangeChange(from: string, to: string) {
     setViewMode('date-range')
     setDateParam({ date_from: from, date_to: to })
+    if (isMobile) setSidebarOpen(false)
   }
 
   function handleLangChange(_: React.MouseEvent, value: Lang | null) {
@@ -84,98 +93,171 @@ export default function MapPage() {
 
   const noData = !loading && segments.length === 0 && (dateParam.date || dateParam.date_from)
 
+  const sidebarContent = (
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography variant="subtitle1" fontWeight={600}>{tr.appTitle}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+          <ToggleButtonGroup
+            value={lang}
+            exclusive
+            onChange={handleLangChange}
+            size="small"
+          >
+            <ToggleButton value="ru" sx={{ textTransform: 'none', fontSize: 11, px: 0.75, py: 0.25 }}>RU</ToggleButton>
+            <ToggleButton value="en" sx={{ textTransform: 'none', fontSize: 11, px: 0.75, py: 0.25 }}>EN</ToggleButton>
+          </ToggleButtonGroup>
+          {isMobile && (
+            <IconButton size="small" onClick={() => setSidebarOpen(false)}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          )}
+        </Box>
+      </Box>
+
+      <Box sx={{ overflowY: 'auto', flex: 1 }}>
+        <DatePicker onDateChange={handleDateChange} onRangeChange={handleRangeChange} lang={lang} />
+
+        <Divider />
+        <StatsPanel stats={stats} lang={lang} />
+
+        <Divider />
+        <Box sx={{ px: 2, py: 1 }}>
+          <FormControlLabel
+            control={
+              <Switch
+                checked={showTimestamps}
+                onChange={(e) => {
+                  setShowTimestamps(e.target.checked)
+                  localStorage.setItem('timeline_show_timestamps', String(e.target.checked))
+                }}
+                size="small"
+              />
+            }
+            label={<Typography variant="body2">{tr.timestampLabels}</Typography>}
+          />
+        </Box>
+
+        <Divider />
+        <Box sx={{ p: 1.5 }}>
+          <Button
+            fullWidth
+            variant={showUpload ? 'contained' : 'outlined'}
+            size="small"
+            startIcon={<UploadFileIcon />}
+            onClick={() => setShowUpload(!showUpload)}
+          >
+            {showUpload ? tr.hideUpload : tr.upload}
+          </Button>
+          {showUpload && <Box sx={{ mt: 1 }}><UploadForm /></Box>}
+        </Box>
+
+        <Divider />
+        <Box sx={{ p: 1.5 }}>
+          <Button
+            fullWidth
+            variant="text"
+            size="small"
+            startIcon={<HistoryIcon />}
+            href="/audit"
+          >
+            {tr.importHistory}
+          </Button>
+        </Box>
+
+        <Divider />
+        <Box sx={{ p: 1.5 }}>
+          <Button
+            fullWidth
+            variant="text"
+            size="small"
+            startIcon={<BarChartIcon />}
+            onClick={() => setShowAlltimeStats(true)}
+          >
+            {tr.alltimeStats}
+          </Button>
+        </Box>
+      </Box>
+    </Box>
+  )
+
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
-      <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
-        {/* Sidebar */}
-        <Box sx={{
-          width: 272,
-          flexShrink: 0,
-          borderRight: 1,
-          borderColor: 'divider',
-          overflowY: 'auto',
-          bgcolor: 'background.paper',
-          display: 'flex',
-          flexDirection: 'column',
-        }}>
-          <Box sx={{ px: 2, py: 1.5, borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Typography variant="subtitle1" fontWeight={600}>{tr.appTitle}</Typography>
-            <ToggleButtonGroup
-              value={lang}
-              exclusive
-              onChange={handleLangChange}
+      <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
+
+        {/* Desktop sidebar */}
+        {!isMobile && (
+          <>
+            {sidebarOpen && (
+              <Box sx={{
+                width: 272,
+                flexShrink: 0,
+                borderRight: 1,
+                borderColor: 'divider',
+                bgcolor: 'background.paper',
+                display: 'flex',
+                flexDirection: 'column',
+                overflow: 'hidden',
+              }}>
+                {sidebarContent}
+              </Box>
+            )}
+            {/* Desktop toggle button */}
+            <IconButton
               size="small"
+              onClick={() => setSidebarOpen(v => !v)}
+              sx={{
+                position: 'absolute',
+                top: 10,
+                left: sidebarOpen ? 280 : 10,
+                zIndex: 10,
+                bgcolor: 'background.paper',
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 1,
+                '&:hover': { bgcolor: 'action.hover' },
+              }}
             >
-              <ToggleButton value="ru" sx={{ textTransform: 'none', fontSize: 11, px: 0.75, py: 0.25 }}>RU</ToggleButton>
-              <ToggleButton value="en" sx={{ textTransform: 'none', fontSize: 11, px: 0.75, py: 0.25 }}>EN</ToggleButton>
-            </ToggleButtonGroup>
-          </Box>
+              <MenuIcon fontSize="small" />
+            </IconButton>
+          </>
+        )}
 
-          <DatePicker onDateChange={handleDateChange} onRangeChange={handleRangeChange} lang={lang} />
-
-          <Divider />
-          <StatsPanel stats={stats} lang={lang} />
-
-          <Divider />
-          <Box sx={{ px: 2, py: 1 }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={showTimestamps}
-                  onChange={(e) => {
-                    setShowTimestamps(e.target.checked)
-                    localStorage.setItem('timeline_show_timestamps', String(e.target.checked))
-                  }}
-                  size="small"
-                />
-              }
-              label={<Typography variant="body2">{tr.timestampLabels}</Typography>}
-            />
-          </Box>
-
-          <Divider />
-          <Box sx={{ p: 1.5 }}>
-            <Button
-              fullWidth
-              variant={showUpload ? 'contained' : 'outlined'}
-              size="small"
-              startIcon={<UploadFileIcon />}
-              onClick={() => setShowUpload(!showUpload)}
-            >
-              {showUpload ? tr.hideUpload : tr.upload}
-            </Button>
-            {showUpload && <Box sx={{ mt: 1 }}><UploadForm /></Box>}
-          </Box>
-
-          <Divider />
-          <Box sx={{ p: 1.5 }}>
-            <Button
-              fullWidth
-              variant="text"
-              size="small"
-              startIcon={<HistoryIcon />}
-              href="/audit"
-            >
-              {tr.importHistory}
-            </Button>
-          </Box>
-
-          <Divider />
-          <Box sx={{ p: 1.5 }}>
-            <Button
-              fullWidth
-              variant="text"
-              size="small"
-              startIcon={<BarChartIcon />}
-              onClick={() => setShowAlltimeStats(true)}
-            >
-              {tr.alltimeStats}
-            </Button>
-          </Box>
-        </Box>
+        {/* Mobile drawer */}
+        {isMobile && (
+          <Drawer
+            anchor="left"
+            open={sidebarOpen}
+            onClose={() => setSidebarOpen(false)}
+            PaperProps={{ sx: { width: 280 } }}
+          >
+            {sidebarContent}
+          </Drawer>
+        )}
 
         {/* Map area */}
         <Box sx={{ flex: 1, position: 'relative' }}>
+          {/* Mobile hamburger */}
+          {isMobile && !sidebarOpen && (
+            <IconButton
+              size="small"
+              onClick={() => setSidebarOpen(true)}
+              sx={{
+                position: 'absolute',
+                top: 10,
+                left: 10,
+                zIndex: 10,
+                bgcolor: 'background.paper',
+                border: 1,
+                borderColor: 'divider',
+                borderRadius: 1,
+                '&:hover': { bgcolor: 'action.hover' },
+              }}
+            >
+              <MenuIcon fontSize="small" />
+            </IconButton>
+          )}
+
           {loading && (
             <Paper elevation={2} sx={{
               position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)',
@@ -217,6 +299,7 @@ export default function MapPage() {
         gap: 3,
         alignItems: 'center',
         flexShrink: 0,
+        flexWrap: 'wrap',
       }}>
         <Typography variant="caption" color="text.secondary">
           {tr.lastSync}: <strong>{formatDateTime(status.last_sync_at, lang, tr.never)}</strong>

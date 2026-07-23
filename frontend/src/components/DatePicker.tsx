@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Box, ToggleButton, ToggleButtonGroup, TextField, Typography } from '@mui/material'
+import { Box, ToggleButton, ToggleButtonGroup, TextField, Typography, Button } from '@mui/material'
 import { Lang, t } from '../i18n'
 
 const STORAGE_KEY = 'timeline_date_state'
@@ -56,24 +56,15 @@ export default function DatePicker({ onDateChange, onRangeChange, lang }: Props)
 
   function handleModeChange(_: React.MouseEvent, value: 'single' | 'range' | null) {
     if (!value) return
-    const next = update({ mode: value })
-    if (value === 'single') onDateChange(next.date)
-    else onRangeChange(next.dateFrom, next.dateTo)
+    update({ mode: value })
   }
 
-  function handleSingleChange(v: string) {
-    update({ date: v })
-    onDateChange(v)
-  }
-
-  function handleFromChange(v: string) {
-    const next = update({ dateFrom: v })
-    if (v && next.dateTo) onRangeChange(v, next.dateTo)
-  }
-
-  function handleToChange(v: string) {
-    const next = update({ dateTo: v })
-    if (next.dateFrom && v) onRangeChange(next.dateFrom, v)
+  function handleApply() {
+    if (state.mode === 'single') {
+      onDateChange(state.date)
+    } else if (state.dateFrom && state.dateTo) {
+      onRangeChange(state.dateFrom, state.dateTo)
+    }
   }
 
   return (
@@ -93,7 +84,7 @@ export default function DatePicker({ onDateChange, onRangeChange, lang }: Props)
         <TextField
           type="date"
           value={state.date}
-          onChange={(e) => handleSingleChange(e.target.value)}
+          onChange={(e) => update({ date: e.target.value })}
           size="small"
           fullWidth
         />
@@ -105,7 +96,7 @@ export default function DatePicker({ onDateChange, onRangeChange, lang }: Props)
             type="date"
             label={tr.from}
             value={state.dateFrom}
-            onChange={(e) => handleFromChange(e.target.value)}
+            onChange={(e) => update({ dateFrom: e.target.value })}
             size="small"
             fullWidth
             InputLabelProps={{ shrink: true }}
@@ -115,13 +106,17 @@ export default function DatePicker({ onDateChange, onRangeChange, lang }: Props)
             type="date"
             label={tr.to}
             value={state.dateTo}
-            onChange={(e) => handleToChange(e.target.value)}
+            onChange={(e) => update({ dateTo: e.target.value })}
             size="small"
             fullWidth
             InputLabelProps={{ shrink: true }}
           />
         </Box>
       )}
+
+      <Button variant="contained" size="small" fullWidth onClick={handleApply}>
+        {tr.apply}
+      </Button>
     </Box>
   )
 }
