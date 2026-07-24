@@ -32,11 +32,17 @@ interface Props {
   onDateChange: (date: string) => void
   onRangeChange: (from: string, to: string) => void
   lang: Lang
+  initialDate?: string
 }
 
-export default function DatePicker({ onDateChange, onRangeChange, lang }: Props) {
+export default function DatePicker({ onDateChange, onRangeChange, lang, initialDate }: Props) {
   const [state, setState] = useState<StoredState>(() => {
     const s = loadState()
+    if (initialDate) {
+      s.mode = 'single'
+      s.date = initialDate
+      saveState(s)
+    }
     // Trigger initial load
     setTimeout(() => {
       if (s.mode === 'single') onDateChange(s.date)

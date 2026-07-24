@@ -95,6 +95,31 @@ export async function getAlltimeStats(): Promise<AlltimeStats> {
   return handleResponse(res)
 }
 
+export async function getCitiesByDate(dateFrom: string, dateTo: string): Promise<CitiesByDateResponse> {
+  const q = new URLSearchParams({ date_from: dateFrom, date_to: dateTo })
+  const res = await fetch(`${BASE_URL}/cities/by-date?${q}`, { headers: authHeaders() })
+  return handleResponse(res)
+}
+
+export async function getDatesByCity(city: string, countryCode?: string): Promise<DatesByCityResponse> {
+  const q = new URLSearchParams({ city })
+  if (countryCode) q.set('country_code', countryCode)
+  const res = await fetch(`${BASE_URL}/cities/by-city?${q}`, { headers: authHeaders() })
+  return handleResponse(res)
+}
+
+export async function listCities(countryCode?: string): Promise<{ cities: CityItem[] }> {
+  const q = new URLSearchParams()
+  if (countryCode) q.set('country_code', countryCode)
+  const res = await fetch(`${BASE_URL}/cities/list?${q}`, { headers: authHeaders() })
+  return handleResponse(res)
+}
+
+export async function listCountries(): Promise<{ countries: { country_code: string; country: string }[] }> {
+  const res = await fetch(`${BASE_URL}/cities/countries`, { headers: authHeaders() })
+  return handleResponse(res)
+}
+
 // Types
 export interface Segment {
   id: number
@@ -128,6 +153,25 @@ export interface AlltimeStats {
   most_active_month: { month: string; distance_meters: number } | null
   total_transit_seconds: number
   unique_places: number
+}
+
+export interface CityItem {
+  city: string
+  country: string
+  country_code: string
+}
+
+export interface CitiesByDateResponse {
+  days: {
+    date: string
+    cities: { city: string; country: string; country_code: string; visit_count: number }[]
+  }[]
+}
+
+export interface DatesByCityResponse {
+  city: string
+  country_code: string | null
+  dates: { date: string; country: string; country_code: string; visit_count: number }[]
 }
 
 export interface ImportRecord {

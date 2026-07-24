@@ -2,13 +2,14 @@ import { useEffect, useState, useCallback } from 'react'
 import {
   Box, Typography, Divider, Button, CircularProgress,
   Paper, Switch, FormControlLabel, ToggleButton, ToggleButtonGroup,
-  IconButton, Drawer, useMediaQuery, useTheme,
+  IconButton, useMediaQuery, useTheme,
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 import CloseIcon from '@mui/icons-material/Close'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
 import HistoryIcon from '@mui/icons-material/History'
 import BarChartIcon from '@mui/icons-material/BarChart'
+import LocationCityIcon from '@mui/icons-material/LocationCity'
 import { getSegments, getStats, getLocationStatus, Segment, Stat } from '../services/api'
 import TrackMap from '../components/TrackMap'
 import DatePicker from '../components/DatePicker'
@@ -18,6 +19,10 @@ import AllTimeStatsModal from '../components/AllTimeStatsModal'
 import { getLang, setLang, t, Lang } from '../i18n'
 
 const MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY ?? ''
+
+function getInitialDateFromUrl(): string | undefined {
+  return new URLSearchParams(window.location.search).get('date') ?? undefined
+}
 
 function formatDateTime(iso: string | null, lang: Lang, never: string): string {
   if (!iso) return never
@@ -116,7 +121,7 @@ export default function MapPage() {
       </Box>
 
       <Box sx={{ overflowY: 'auto', flex: 1 }}>
-        <DatePicker onDateChange={handleDateChange} onRangeChange={handleRangeChange} lang={lang} />
+        <DatePicker onDateChange={handleDateChange} onRangeChange={handleRangeChange} lang={lang} initialDate={getInitialDateFromUrl()} />
 
         <Divider />
         <StatsPanel stats={stats} lang={lang} />
@@ -162,6 +167,19 @@ export default function MapPage() {
             href="/audit"
           >
             {tr.importHistory}
+          </Button>
+        </Box>
+
+        <Divider />
+        <Box sx={{ p: 1.5 }}>
+          <Button
+            fullWidth
+            variant="text"
+            size="small"
+            startIcon={<LocationCityIcon />}
+            href="/cities"
+          >
+            {tr.citiesHistory}
           </Button>
         </Box>
 
@@ -223,16 +241,25 @@ export default function MapPage() {
           </>
         )}
 
-        {/* Mobile drawer */}
-        {isMobile && (
-          <Drawer
-            anchor="left"
-            open={sidebarOpen}
-            onClose={() => setSidebarOpen(false)}
-            PaperProps={{ sx: { width: 280 } }}
-          >
+        {/* Mobile sidebar — absolutely positioned over map, no Drawer backdrop issues */}
+        {isMobile && sidebarOpen && (
+          <Box sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: 280,
+            height: '100%',
+            zIndex: 20,
+            bgcolor: 'background.paper',
+            borderRight: 1,
+            borderColor: 'divider',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            boxShadow: 4,
+          }}>
             {sidebarContent}
-          </Drawer>
+          </Box>
         )}
 
         {/* Map area */}

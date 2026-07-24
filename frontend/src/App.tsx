@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import LoginPage from './pages/LoginPage'
 import MapPage from './pages/MapPage'
 import AuditLogPage from './pages/AuditLogPage'
+import CitiesPage from './pages/CitiesPage'
 
 function isLoggedIn(): boolean {
   return !!localStorage.getItem('token')
@@ -21,9 +22,8 @@ export default function App() {
     return <LoginPage onLogin={() => { setAuthed(true); window.history.replaceState(null, '', '/') }} />
   }
 
-  if (path === '/audit') {
-    return <AuditLogPage />
-  }
+  if (path === '/audit') return <AuditLogPage />
+  if (path === '/cities') return <CitiesPage />
 
   return <MapPage />
 }

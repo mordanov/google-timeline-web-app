@@ -8,6 +8,7 @@ from sqlalchemy import select
 from app.auth.router import router as auth_router
 from app.locations.router import router as locations_router
 from app.importer.router import router as importer_router
+from app.cities.router import router as cities_router
 from app.config import settings
 from app.db import AsyncSessionLocal
 from app.models.user import User
@@ -46,3 +47,4 @@ app.add_middleware(
 app.include_router(auth_router, prefix="/auth", tags=["auth"])
 app.include_router(locations_router, prefix="/locations", tags=["locations"])
 app.include_router(importer_router, prefix="/import", tags=["import"])
+app.include_router(cities_router, prefix="/cities", tags=["cities"])

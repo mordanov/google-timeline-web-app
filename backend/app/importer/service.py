@@ -11,6 +11,7 @@ from app.db import AsyncSessionLocal
 from app.importer.parser import parse_timeline
 from app.models.import_record import ImportRecord
 from app.models.location_segment import LocationSegment
+from app.cities.service import geocode_missing_days
 
 logger = logging.getLogger(__name__)
 
@@ -87,6 +88,13 @@ async def process_import(file_bytes: bytes, import_record_id: int, file_identifi
             record.file_md5 = file_md5
             record.completed_at = datetime.now(timezone.utc)
             await db.commit()
+
+            try:
+                n = await geocode_missing_days(db)
+                if n:
+                    logger.info("Geocoded day_cities for %d new dates", n)
+            except Exception:
+                logger.exception("geocode_missing_days failed after import %d", import_record_id)
 
         except Exception as exc:
             logger.exception("Import failed for record %d", import_record_id)
